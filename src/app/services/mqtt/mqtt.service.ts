@@ -135,7 +135,7 @@ export class MQTTService implements TransportService {
   public publish(message?: string) {
 
     for (const t of this.config.publish) {
-      this.client.publish(t, message);
+      this.client.publish(`${this.config.key}/${t}/`, message);
     }
   }
 
@@ -146,8 +146,8 @@ export class MQTTService implements TransportService {
     // Subscribe to our configured queues
     // Callback is set at client instantiation (assuming we don't need separate callbacks per queue.)
     for (const t of this.config.subscribe) {
-      this.debug('subscribing: ' + t);
-      this.client.subscribe(t);
+      this.debug('subscribing: ' + `${this.config.key}/${t}/`);
+      this.client.subscribe(`${this.config.key}/${t}/`);
     }
     // Update the state
     if (this.config.subscribe.length > 0) {

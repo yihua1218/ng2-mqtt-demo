@@ -1,17 +1,20 @@
 {
-    "port": 15675,
-    "path": "ws",
+    "port": 8080,
+    "path": "",
     "ssl": false,
 
     "user": "guest",
     "pass": "guest",
 
     "subscribe": [
-        "Test"
+        "public"
     ],
     "publish": [
-        "Test"
+        "public"
     ],
 
-    "keepalive": 10
+    "keepalive": 10,
+
+    "secret": "hSwp8eDyPHUwsW3-34hrymzdK7BszSOIAAAAAAAAAAI",
+    "key": "EPepbXVTOpu2gmcbN_xbLEelbbW0-PHv"
 }

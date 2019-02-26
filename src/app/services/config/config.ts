@@ -19,6 +19,10 @@ export interface Config {
   publish: string[];
   subscribe: string[];
 
+  // Emitter
+  secret: string;
+  key: string;
+
   // How often to heartbeat?
   keepalive?: number;
 };

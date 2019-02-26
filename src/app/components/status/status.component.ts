@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { MQTTService } from '../../services/mqtt';
+import { EmitterService } from '../../services/emitter';
 import { TransportState } from "../../services/mqtt/transport.service";
 
 /**
@@ -15,11 +15,11 @@ export class StatusComponent implements OnInit {
 
   public state: Observable<string>;
 
-  constructor(private _mqService: MQTTService) { }
+  constructor(private _emService: EmitterService) { }
 
   ngOnInit() {
     console.log('Status init');
-    this.state = this._mqService.state
+    this.state = this._emService.state
       .map((state: number) => TransportState[state]);
   }
 

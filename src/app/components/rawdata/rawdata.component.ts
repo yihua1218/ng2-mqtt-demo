@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Packet } from 'mqtt';
 
-import { MQTTService } from '../../services/mqtt';
+import { EmitterService } from '../../services/emitter';
 import { ConfigService } from '../../services/config/config.service';
 
 /**
@@ -21,7 +21,7 @@ import { ConfigService } from '../../services/config/config.service';
   selector: 'app-rawdata',
   templateUrl: './rawdata.component.html',
   styleUrls: ['./rawdata.component.css'],
-  providers: [MQTTService, ConfigService]
+  providers: [EmitterService, ConfigService]
 })
 export class RawDataComponent implements OnInit, OnDestroy {
 
@@ -35,7 +35,7 @@ export class RawDataComponent implements OnInit, OnDestroy {
   public count = 0;
 
   /** Constructor */
-  constructor(private _mqService: MQTTService,
+  constructor(private _emService: EmitterService,
     private _configService: ConfigService) { }
 
   ngOnInit() {
@@ -43,8 +43,8 @@ export class RawDataComponent implements OnInit, OnDestroy {
     this._configService.getConfig('api/config.json').then(
       config => {
         // ... then pass it to (and connect) the message queue:
-        this._mqService.configure(config);
-        this._mqService.try_connect()
+        this._emService.configure(config);
+        this._emService.try_connect()
           .then(this.on_connect)
           .catch(this.on_error);
       }
@@ -52,7 +52,7 @@ export class RawDataComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    this._mqService.disconnect();
+    this._emService.disconnect();
   }
 
   /** Callback on_connect to queue */
@@ -60,13 +60,13 @@ export class RawDataComponent implements OnInit, OnDestroy {
 
     // Store local reference to Observable
     // for use with template ( | async )
-    this.messages = this._mqService.messages;
+    this.messages = this._emService.messages;
 
     // Subscribe a function to be run on_next message
     this.messages.subscribe(this.on_next);
   }
 
-  /** Consume a message from the _mqService */
+  /** Consume a message from the _emService */
   public on_next = (message: Packet) => {
 
     // Store message in "historic messages" queue
