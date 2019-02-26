@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@angular/core';
+import { Inject, Injectable, PACKAGE_ROOT_URL } from '@angular/core';
 import { DOCUMENT } from '@angular/platform-browser';
 
 import { Subject } from 'rxjs/Rx';
@@ -9,7 +9,15 @@ import { TransportService, TransportState } from './transport.service';
 
 import * as mqtt from 'mqtt';
 
-
+export class MQTTPacket {
+  public received_at: Date;
+  public topic: string;
+  public message: string;
+  public packet: mqtt.Packet;
+  constructor () {
+    this.received_at = new Date();
+  }
+}
 /**
  * Angular2 Message Queue Service using MQTT.js
  *
@@ -28,10 +36,10 @@ export class MQTTService implements TransportService {
   public state: BehaviorSubject<TransportState>;
 
   // Publishes new messages to Observers
-  public messages: Subject<mqtt.Packet>;
+  public messages: Subject<MQTTPacket>;
 
   // Configuration structure with MQ creds
-  private config: Config;
+  protected config: Config;
 
   // MQTT Client from MQTT.js
   private client: mqtt.Client;
@@ -41,7 +49,7 @@ export class MQTTService implements TransportService {
 
   /** Constructor */
   public constructor(@Inject(DOCUMENT) private _document: any) {
-    this.messages = new Subject<mqtt.Packet>();
+    this.messages = new Subject<MQTTPacket>();
     this.state = new BehaviorSubject<TransportState>(TransportState.CLOSED);
   }
 
@@ -132,27 +140,16 @@ export class MQTTService implements TransportService {
 
 
   /** Send a message to all topics */
-  public publish(message?: string) {
-
-    for (const t of this.config.publish) {
-      this.client.publish(`${this.config.key}/${t}/`, message);
-    }
+  public publish(channel: string, message?: string) {
+    this.debug(`publish: [${channel}]: ${message}`);
+    this.client.publish(channel, message);
   }
 
 
   /** Subscribe to server message queues */
-  public subscribe(): void {
-
-    // Subscribe to our configured queues
-    // Callback is set at client instantiation (assuming we don't need separate callbacks per queue.)
-    for (const t of this.config.subscribe) {
-      this.debug('subscribing: ' + `${this.config.key}/${t}/`);
-      this.client.subscribe(`${this.config.key}/${t}/`);
-    }
-    // Update the state
-    if (this.config.subscribe.length > 0) {
-      this.state.next(TransportState.SUBSCRIBED);
-    }
+  public subscribe(channel: string): void {
+    this.debug(`subscribe: ${channel}`);
+    this.client.subscribe(channel);
   }
 
 
@@ -182,9 +179,6 @@ export class MQTTService implements TransportService {
 
     // Indicate our connected state to observers
     this.state.next(TransportState.CONNECTED);
-
-    // Subscribe to message queues
-    this.subscribe();
 
     this.debug(typeof this.resolvePromise);
 
@@ -220,17 +214,18 @@ export class MQTTService implements TransportService {
   // On message RX, notify the Observable with the message object
   public on_message = (...args: any[]) => {
 
-    const topic = args[0],
-      message = args[1],
-      packet: mqtt.Packet = args[2];
+    const packet = new MQTTPacket();
+
+    packet.topic = args[0];
+    packet.message = args[1];
+    packet.packet = args[2];
 
     // Log it to the console
-    this.debug(topic);
-    this.debug(message);
+    this.debug(packet);
     // this.debug(packet.messageId);
 
-    if (message.toString()) {
-      this.messages.next(message);
+    if (packet.message.toString()) {
+      this.messages.next(packet);
     } else {
       console.warn('Empty message received!');
     }

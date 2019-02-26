@@ -6,7 +6,9 @@
     <p>{{count}} total</p>
 
     <h3 *ngIf="count">Latest:</h3>
-    <pre>{{messages | async}}</pre>
+      <!-- <pre>{{message | async}}</pre> -->
+      <pre>{{message.received_at.toLocaleTimeString()}} {{message.topic}}: {{message.message}}</pre>
+    <!-- <pre>{{messages.received_at.toLocaleTimeString() | async}} {{messages.topic | async}}: {{messages.message | async}}</pre> -->
 
     <div *ngIf="mq.length" class="panel panel-default">
         <div class="panel-heading">
@@ -14,7 +16,9 @@
         </div>
         <div class="panel-body" class="debug-mq-panel">
             <ol reversed>
-                <li *ngFor="let m of mq | reverse "><pre>{{m}}</pre></li>
+                <li *ngFor="let m of mq | reverse ">
+                  <pre>{{m.received_at.toLocaleTimeString()}} {{m.topic}}: {{m.message}}</pre>
+                </li>
             </ol>
         </div>
     </div>

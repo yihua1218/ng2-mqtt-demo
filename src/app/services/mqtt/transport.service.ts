@@ -41,8 +41,8 @@ export abstract class TransportService {
   abstract disconnect(): void;
 
   /** Send a message to all topics, or just those in the array */
-  abstract publish(message?: string): void;
+  abstract publish(channel: string, message?: string): void;
 
   /** Subscribe to server message queues */
-  abstract subscribe(): void;
+  abstract subscribe(channel: string): void;
 }

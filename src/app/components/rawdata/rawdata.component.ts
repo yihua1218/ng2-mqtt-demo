@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { Packet } from 'mqtt';
+import { MQTTPacket } from '../../services/mqtt';
 
 import { EmitterService } from '../../services/emitter';
 import { ConfigService } from '../../services/config/config.service';
@@ -26,17 +26,20 @@ import { ConfigService } from '../../services/config/config.service';
 export class RawDataComponent implements OnInit, OnDestroy {
 
   // Stream of messages
-  public messages: Observable<Packet>;
+  public messages: Observable<MQTTPacket>;
+  public message: MQTTPacket;
 
   // Array of historic message (bodies)
-  public mq: Array<string> = [];
+  public mq: Array<MQTTPacket> = [];
 
   // A count of messages received
   public count = 0;
 
   /** Constructor */
   constructor(private _emService: EmitterService,
-    private _configService: ConfigService) { }
+    private _configService: ConfigService) {
+      this.message = new MQTTPacket();
+    }
 
   ngOnInit() {
     // Get configuration from config service...
@@ -64,13 +67,18 @@ export class RawDataComponent implements OnInit, OnDestroy {
 
     // Subscribe a function to be run on_next message
     this.messages.subscribe(this.on_next);
+    this._emService.subscribe('public/');
+    this._emService.publish('public/', JSON.stringify({
+      test: 'test',
+    }));
   }
 
   /** Consume a message from the _emService */
-  public on_next = (message: Packet) => {
+  public on_next = (message: MQTTPacket) => {
 
     // Store message in "historic messages" queue
-    this.mq.push(message.toString() + '\n');
+    this.mq.push(message);
+    this.message = message;
 
     // Count it
     this.count++;

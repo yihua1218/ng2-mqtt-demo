@@ -10,4 +10,16 @@ export class EmitterService extends MQTTService {
     super(__document);
   }
 
+  subscribe(channel: string) {
+    super.subscribe(`${this.config.key}/${channel}`);
+  }
+
+  publish(channel: string, message: any) {
+    let msg = message;
+
+    if (typeof msg !== 'string') {
+      msg = JSON.stringify(message);
+    }
+    super.publish(`${this.config.key}/${channel}`, msg);
+  }
 }
